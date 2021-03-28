@@ -3,7 +3,7 @@
 
 # Imports
 ##############################################################################
-from flask import Flask
+from flask import Flask, jsonify, request
 ##############################################################################
 
 
@@ -28,6 +28,22 @@ users = {
 @app.route('/')
 def home():
     return 'Home Page'
+
+
+@app.route('/login', methods=['POST'])
+def login():
+    credentials = request.get_json()
+
+    username = credentials['username']
+    password = credentials['password']
+
+    for usr,passwd in users.items():
+        if usr == username and passwd == password:
+            return jsonify({'message':'Authenticated',
+                            'status':200}),200
+
+    return jsonify({'message':'Credentials are invalid',
+                    'status':401}),401
 ##############################################################################
 
 
