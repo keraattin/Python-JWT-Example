@@ -9,3 +9,9 @@ Then, run the code
 ```
 python3 app.py
 ```
+
+### How to make auth request?
+![auth](pictures/auth.PNG)
+
+### How to see private pages?
+![header](pictures/header.PNG)
