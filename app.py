@@ -71,6 +71,20 @@ def auth_token_required(f):
 
 # Views
 ##############################################################################
+# Everyone Can See This
+@app.route('/public', methods=['GET'])
+def public():
+    return 'This is the public page'
+
+
+# Only Authenticated People See This
+@app.route('/private', methods=['GET'])
+@auth_token_required
+def private():
+    return 'This is the private page'
+
+
+# Login
 @app.route('/login', methods=['POST'])
 def login():
     credentials = request.get_json()
