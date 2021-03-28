@@ -5,6 +5,7 @@
 ##############################################################################
 from flask import Flask, jsonify, request
 import jwt
+from datetime import datetime, timedelta
 ##############################################################################
 
 
@@ -13,6 +14,15 @@ import jwt
 app   = Flask(__name__)
 PORT  = 5000
 DEBUG = True
+
+
+EXP_T = 1   # Expire Time(Minutes)
+##############################################################################
+
+
+# Configs
+##############################################################################
+app.config['SECRET_KEY'] = 'Th1s1sTh3Sup3rS3cr3tK3y'
 ##############################################################################
 
 
@@ -40,11 +50,30 @@ def login():
 
     for usr,passwd in users.items():
         if usr == username and passwd == password:
-            return jsonify({'message':'Authenticated',
-                            'status':200}),200
+            auth_token = jwt.encode(
+                {
+                 'username':username,
+                 'expire':str(datetime.utcnow()+timedelta(minutes=EXP_T))
+                },
+                app.secret_key
+            )
 
-    return jsonify({'message':'Credentials are invalid',
-                    'status':401}),401
+            # If Credentials are Valid
+            return jsonify(
+                {
+                 'message':'Authenticated',
+                 'auth_token':auth_token,
+                 'status':200
+                }
+            ),200
+
+    # If Credentials are Invalid
+    return jsonify(
+        {
+         'message':'Credentials are invalid',
+         'status':401
+         }
+    ),401
 ##############################################################################
 
 
