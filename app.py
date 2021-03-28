@@ -6,6 +6,7 @@
 from flask import Flask, jsonify, request
 import jwt
 from datetime import datetime, timedelta
+from functools import wraps
 ##############################################################################
 
 
@@ -16,7 +17,8 @@ PORT  = 5000
 DEBUG = True
 
 
-EXP_T = 1   # Expire Time(Minutes)
+EXP_TIME   = 1              # Expire Time(Minutes)
+JWT_ALG    = 'HS256'        # JWT Algorithm
 ##############################################################################
 
 
@@ -34,13 +36,41 @@ users = {
 ##############################################################################
 
 
+# Decorators
+##############################################################################
+def auth_token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        data = request.get_json()
+        auth_token = data['auth_token']
+
+        if not auth_token:
+            return jsonify(
+                {
+                    'message':'Token is missing'
+                }
+            ),403
+
+        try:
+            token = jwt.decode(
+                auth_token, 
+                app.secret_key, 
+                algorithms=[JWT_ALG]
+            )
+        except Exception as e:
+            return jsonify(
+                {
+                    'message':'Token is invalid'
+                }
+            ),403
+        
+        return f(*args, **kwargs)
+    return decorated
+##############################################################################
+
+
 # Views
 ##############################################################################
-@app.route('/')
-def home():
-    return 'Home Page'
-
-
 @app.route('/login', methods=['POST'])
 def login():
     credentials = request.get_json()
@@ -53,9 +83,10 @@ def login():
             auth_token = jwt.encode(
                 {
                  'username':username,
-                 'expire':str(datetime.utcnow()+timedelta(minutes=EXP_T))
+                 'exp':datetime.utcnow()+timedelta(minutes=EXP_TIME)
                 },
-                app.secret_key
+                app.secret_key,     # Secret Key
+                JWT_ALG             # JWT Algorithm
             )
 
             # If Credentials are Valid
