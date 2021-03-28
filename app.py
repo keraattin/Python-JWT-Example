@@ -7,6 +7,7 @@ from flask import Flask, jsonify, request
 import jwt
 from datetime import datetime, timedelta
 from functools import wraps
+import hashlib
 ##############################################################################
 
 
@@ -31,8 +32,8 @@ app.config['SECRET_KEY'] = 'Th1s1sTh3Sup3rS3cr3tK3y'
 # Users {'username':'password'}
 ##############################################################################
 users = {
-    'admin':'1234'
-}
+    'admin':'03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4'
+} # {'admin':'1234'}
 ##############################################################################
 
 
@@ -86,13 +87,18 @@ def private():
 # Login
 @app.route('/login', methods=['POST'])
 def login():
-    credentials = request.get_json()
+    credentials = request.get_json()    # Getting Credentials
 
+    # Credentials
     username = credentials['username']
     password = credentials['password']
 
+    # Password Hash
+    password_hash = hashlib.sha256(password.encode('utf-8')).hexdigest()
+
+    # Checking Whether Username & Password Exist or Not
     for usr,passwd in users.items():
-        if usr == username and passwd == password:
+        if usr == username and passwd == password_hash:
             auth_token = jwt.encode(
                 {
                  'username':username,
