@@ -41,10 +41,9 @@ users = {
 def auth_token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        data = request.get_json()
-        auth_token = data['auth_token']
+        auth_header = request.headers.get('Authorization')
 
-        if not auth_token:
+        if not auth_header:
             return jsonify(
                 {
                     'message':'Token is missing'
@@ -53,7 +52,7 @@ def auth_token_required(f):
 
         try:
             token = jwt.decode(
-                auth_token, 
+                auth_header,
                 app.secret_key, 
                 algorithms=[JWT_ALG]
             )
